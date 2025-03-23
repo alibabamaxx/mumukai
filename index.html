@@ -3,145 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumik AI - 0.5</title>
+    <title>Mumik AI - Akıllı WhatsApp Tarzı</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #e5ddd5;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(to bottom, #e5ddd5, #d0c9b8);
             margin: 0;
-            padding: 0;
+            padding: 20px;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
         #app-container {
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             height: 90vh;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            background: #fff;
+            border-radius: 25px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            border: 1px solid #ccc;
         }
         #header {
-            background-color: #075E54;
+            background: linear-gradient(to right, #075E54, #128C7E);
             color: white;
-            padding: 10px 15px;
+            padding: 20px;
             display: flex;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         #header img {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 20px;
+            border: 3px solid #fff;
         }
         #header span {
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         #chat-container {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 15px;
-            background: url('https://i.imgur.com/8vJ8L5S.png');
-            background-size: cover;
+            padding: 25px;
+            background: url('https://i.imgur.com/8vJ8L5S.png') repeat;
+            background-size: 300px;
         }
         #input-container {
             display: flex;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-top: 1px solid #ccc;
+            padding: 20px;
+            background: #f0f0f0;
+            border-top: 1px solid #ddd;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
         }
         #query {
             flex-grow: 1;
-            padding: 12px;
+            padding: 15px;
             font-size: 16px;
             border: none;
-            border-radius: 25px;
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 35px;
+            background: #fff;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
             outline: none;
+            transition: all 0.3s;
+        }
+        #query:focus {
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.6);
         }
         #send-btn {
-            padding: 12px 20px;
+            padding: 15px 30px;
             font-size: 16px;
-            background-color: #25D366;
-            color: white;
+            background: #25D366;
+            color: writespace;
             border: none;
-            border-radius: 25px;
-            margin-left: 10px;
+            border-radius: 35px;
+            margin-left: 20px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: transform 0.3s, background 0.3s;
         }
         #send-btn:hover {
-            background-color: #20b958;
+            background: #20b958;
+            transform: scale(1.1);
         }
         .message {
-            max-width: 70%;
-            margin: 8px 0;
-            padding: 10px 15px;
-            border-radius: 10px;
+            max-width: 80%;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 20px;
             position: relative;
-            animation: slideIn 0.3s ease;
+            animation: slideIn 0.5s ease;
+            line-height: 1.6;
+            font-size: 16px;
         }
         .user-message {
-            background-color: #dcf8c6;
+            background: #dcf8c6;
             align-self: flex-end;
             margin-left: auto;
         }
         .bot-message {
-            background-color: #ffffff;
+            background: #fff;
             align-self: flex-start;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
         }
         .typing {
-            background-color: #ffffff;
+            background: #fff;
             align-self: flex-start;
-            padding: 10px;
-            border-radius: 10px;
+            padding: 15px 20px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            animation: fadeInOut 1s infinite;
+            animation: fadeInOut 1.5s infinite;
         }
         .typing span {
-            width: 8px;
-            height: 8px;
-            background-color: #888;
+            width: 12px;
+            height: 12px;
+            background: #25D366;
             border-radius: 50%;
-            margin: 0 2px;
-            animation: bounce 0.6s infinite alternate;
+            margin: 0 4px;
+            animation: bounce 0.7s infinite alternate;
         }
         .typing span:nth-child(2) { animation-delay: 0.2s; }
         .typing span:nth-child(3) { animation-delay: 0.4s; }
         .timestamp {
-            font-size: 12px;
-            color: #888;
+            font-size: 13px;
+            color: #666;
             text-align: right;
-            margin-top: 5px;
+            margin-top: 10px;
+            opacity: 0.9;
         }
         a {
-            color: #1e90ff;
+            color: #128C7E;
             text-decoration: none;
+            font-weight: 600;
         }
         a:hover {
             text-decoration: underline;
         }
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(40px); }
             to { opacity: 1; transform: translateY(0); }
         }
         @keyframes fadeInOut {
-            0%, 100% { opacity: 0.5; }
+            0%, 100% { opacity: 0.7; }
             50% { opacity: 1; }
         }
         @keyframes bounce {
             from { transform: translateY(0); }
-            to { transform: translateY(-5px); }
+            to { transform: translateY(-10px); }
         }
     </style>
 </head>
@@ -153,7 +166,7 @@
         </div>
         <div id="chat-container"></div>
         <div id="input-container">
-            <input type="text" id="query" placeholder="Bir şey yaz...">
+            <input type="text" id="query" placeholder="Bana bir şey sor ya da iste...">
             <button id="send-btn" onclick="gonder()">Gönder</button>
         </div>
     </div>
@@ -189,37 +202,64 @@
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                const ilkSonuc = data.items && data.items[0];
+                let cevap = "";
+                let kaynakLink = "";
+                let kaynakBaslik = "";
 
-                // "Yazıyor..." göstergesini kaldır
+                // İlk veya ikinci sonuçtan özet al
+                if (data.items && data.items[0]) {
+                    cevap = await sayfaOzetle(data.items[0].link, sorgu);
+                    kaynakLink = data.items[0].link;
+                    kaynakBaslik = data.items[0].title;
+                    if (!cevap || cevap.length < 100 && data.items[1]) {
+                        cevap = await sayfaOzetle(data.items[1].link, sorgu);
+                        kaynakLink = data.items[1].link;
+                        kaynakBaslik = data.items[1].title;
+                    }
+                }
+
+                // Ekstra API’lerden veri çek
+                const dolarKuru = await getDolarKuru();
+                const havaDurumu = sorgu.toLowerCase().includes("hava durumu") ? await getHavaDurumu(sorgu) : "";
+                const espri = sorgu.toLowerCase().includes("espri") ? await getEspri() : "";
+
                 chatContainer.removeChild(typingMsg);
 
-                if (ilkSonuc) {
-                    const ozet = await sayfaOzetle(ilkSonuc.link, sorgu);
-                    const botMsg = document.createElement("div");
-                    botMsg.className = "message bot-message";
-                    botMsg.innerHTML = `${ozet}<br><a href="${ilkSonuc.link}" target="_blank">Kaynak: ${ilkSonuc.title}</a><div class="timestamp">${getTime()}</div>`;
-                    chatContainer.appendChild(botMsg);
+                const botMsg = document.createElement("div");
+                botMsg.className = "message bot-message";
+                let fullCevap = "";
+
+                if (sorgu.toLowerCase().includes("kod yaz")) {
+                    fullCevap = kodYaz(sorgu);
+                } else if (sorgu.toLowerCase().includes("yemek tarifi")) {
+                    fullCevap = await yemekTarifiOzetle(kaynakLink || data.items[0]?.link, sorgu);
+                } else if (cevap) {
+                    fullCevap = `${cevap}<br><br>Bu konuda daha fazla bilgi almak istersen, aşağıdaki kaynağı inceleyebilirsin ya da bana başka bir soru sorabilirsin!`;
                 } else {
-                    const botMsg = document.createElement("div");
-                    botMsg.className = "message bot-message";
-                    botMsg.innerHTML = `Sonuç bulunamadı.<div class="timestamp">${getTime()}</div>`;
-                    chatContainer.appendChild(botMsg);
+                    fullCevap = `Üzgünüm, "${sorgu}" ile ilgili yeterli bilgi bulamadım. Daha spesifik bir şey sorarsan sana daha iyi yardımcı olabilirim!`;
                 }
+
+                // Ekstra bilgiler ekle
+                fullCevap += `<br><br><strong>Anlık Dolar Kuru:</strong> 1 USD = ${dolarKuru} TL`;
+                if (havaDurumu) fullCevap += `<br><br><strong>Hava Durumu:</strong> ${havaDurumu}`;
+                if (espri) fullCevap += `<br><br><strong>Bir Espri:</strong> ${espri}`;
+
+                botMsg.innerHTML = `${fullCevap}<br><a href="${kaynakLink}" target="_blank">Kaynak: ${kaynakBaslik}</a><div class="timestamp">${getTime()}</div>`;
+                chatContainer.appendChild(botMsg);
             } catch (error) {
                 chatContainer.removeChild(typingMsg);
                 const botMsg = document.createElement("div");
                 botMsg.className = "message bot-message";
-                botMsg.innerHTML = `Bir hata oluştu.<div class="timestamp">${getTime()}</div>`;
+                const dolarKuru = await getDolarKuru();
+                botMsg.innerHTML = `Bir hata oluştu, ama üzülme! Tekrar denersen sana yardımcı olabilirim.<br><br><strong>Anlık Dolar Kuru:</strong> 1 USD = ${dolarKuru} TL<div class="timestamp">${getTime()}</div>`;
                 chatContainer.appendChild(botMsg);
                 console.error("Hata:", error);
             }
 
-            // Sohbeti aşağı kaydır
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // Sayfayı özetleme fonksiyonu (geliştirilmiş)
+        // Sayfayı özetleme fonksiyonu (daha zeki)
         async function sayfaOzetle(url, sorgu) {
             try {
                 const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
@@ -228,12 +268,11 @@
 
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, "text/html");
-                const elements = doc.querySelectorAll("p, h1, h2, h3, article, span");
+                const elements = doc.querySelectorAll("p, h1, h2, h3, article, span, div");
                 let fullText = "";
                 elements.forEach(el => fullText += el.textContent + " ");
 
-                // Sorguya göre alakalı içeriği bul
-                const sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 15);
+                const sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 25);
                 const sorguKelimeleri = sorgu.toLowerCase().split(" ");
                 let enAlakaliCumleler = [];
 
@@ -241,41 +280,133 @@
                     let alakaPuani = 0;
                     const cumleKelimeleri = cumle.toLowerCase().split(" ");
                     sorguKelimeleri.forEach(kelime => {
-                        if (cumleKelimeleri.includes(kelime)) alakaPuani += 2;
-                        else if (cumle.toLowerCase().includes(kelime)) alakaPuani += 1;
+                        if (cumleKelimeleri.includes(kelime)) alakaPuani += 4;
+                        else if (cumle.toLowerCase().includes(kelime)) alakaPuani += 2;
                     });
-                    if (alakaPuani > 1) {
+                    if (alakaPuani > 3) {
                         enAlakaliCumleler.push({ cumle: cumle.trim(), puan: alakaPuani });
                     }
                 });
 
-                // En alakalı 2-3 cümleyi seç ve Türkçe'ye çevir (gerekirse)
                 enAlakaliCumleler.sort((a, b) => b.puan - a.puan);
-                let ozet = enAlakaliCumleler.slice(0, 3).map(c => c.cumle).join(". ");
-                if (!ozet) return "Alakalı içerik bulunamadı.";
+                let ozet = enAlakaliCumleler.slice(0, 6).map(c => c.cumle).join(". ");
+                if (!ozet || ozet.length < 50) return `Sorguna "${sorgu}" için yeterli bilgi bulunamadı, ama başka bir şekilde yardımcı olabilirim!`;
 
-                // İngilizce kontrolü ve basit çeviri
                 if (/^[A-Za-z]/.test(ozet) && !sorgu.match(/[A-Za-z]/)) {
                     ozet = await basitCeviri(ozet);
                 }
 
-                return ozet.length > 20 ? `${ozet}.` : "İçerik yetersiz, özetlenemedi.";
+                return ozet;
             } catch (error) {
-                console.error("Sayfa özetleme hatası:", error);
-                return "Sayfa içeriği özetlenemedi.";
+                return `Sorguna "${sorgu}" için yeterli bilgi bulunamadı, ama başka bir şekilde yardımcı olabilirim!`;
             }
         }
 
-        // Basit çeviri fonksiyonu (İngilizceyi Türkçe'ye)
+        // Yemek tarifi özetleme (daha mantıklı)
+        async function yemekTarifiOzetle(url, sorgu) {
+            try {
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                const html = await response.text();
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+                const elements = doc.querySelectorAll("p, li, h1, h2, h3, article");
+                let fullText = "";
+                elements.forEach(el => fullText += el.textContent + " ");
+
+                const sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 15);
+                const tarifKelimeleri = ["malzeme", "tarif", "yapılışı", "adım", "pişir", "servis", "kaşık", "gram", "dakika"];
+                let tarifCumleler = [];
+
+                sentences.forEach(cumle => {
+                    let alakaPuani = 0;
+                    const cumleKelimeleri = cumle.toLowerCase().split(" ");
+                    tarifKelimeleri.forEach(kelime => {
+                        if (cumleKelimeleri.includes(kelime)) alakaPuani += 3;
+                    });
+                    if (alakaPuani > 2 || cumle.toLowerCase().includes(sorgu.split(" ")[0].toLowerCase())) {
+                        tarifCumleler.push(cumle.trim());
+                    }
+                });
+
+                let ozet = tarifCumleler.slice(0, 8).join(". ");
+                if (!ozet || ozet.length < 50) {
+                    ozet = `İşte "${sorgu}" için basit bir tarif: Malzemeleri hazırla, karıştır ve pişir. Daha iyi bir tarif için başka bir kaynak deneyebiliriz!`;
+                } else {
+                    ozet = `İşte "${sorgu}" için detaylı bir tarif: ${ozet} Afiyet olsun, başka bir tarif istersen söyle!`;
+                }
+
+                if (/^[A-Za-z]/.test(ozet)) ozet = await basitCeviri(ozet);
+                return ozet;
+            } catch (error) {
+                return `İşte "${sorgu}" için basit bir tarif: Malzemeleri hazırla, karıştır ve pişir. Daha iyi bir tarif için başka bir kaynak deneyebiliriz!`;
+            }
+        }
+
+        // Kod yazma fonksiyonu
+        function kodYaz(sorgu) {
+            if (sorgu.toLowerCase().includes("html")) {
+                return `İşte kullanışlı bir HTML kodu:<br><pre><!DOCTYPE html><br><html><br><head><br>    <title>Basit Sayfa</title><br>    <style><br>        body { font-family: Arial; }<br>    </style><br></head><br><body><br>    <h1>Merhaba Dünya!</h1><br>    <p>Bu bir test sayfasıdır.</p><br></body><br></html></pre><br>Bu kod, stil eklenmiş basit bir web sayfası oluşturur. Daha fazlasını istersen söyle!`;
+            } else if (sorgu.toLowerCase().includes("javascript")) {
+                return `İşte pratik bir JavaScript kodu:<br><pre>function hesapla(a, b) {<br>    let toplam = a + b;<br>    console.log("Toplam: " + toplam);<br>}<br>hesapla(5, 3);</pre><br>Bu kod, iki sayıyı toplar ve sonucu konsola yazar "“Toplam: 8”. Daha karmaşık bir şey istersen belirt!`;
+            } else {
+                return `Hangi tür kod istediğini söyle (örneğin, HTML, JavaScript), sana özel bir örnek hazırlayayım! Şimdilik basit bir HTML:<br><pre><p>Merhaba Dünya!</p></pre>`;
+            }
+        }
+
+        // Anlık dolar kuru (TCMB API)
+        async function getDolarKuru() {
+            try {
+                const response = await fetch("https://www.tcmb.gov.tr/kurlar/today.xml");
+                const text = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(text, "text/xml");
+                const usd = xmlDoc.querySelector("Currency[Kod='USD'] ForexSelling");
+                return usd ? usd.textContent : "Bilinmiyor";
+            } catch (error) {
+                return "Bilinmiyor";
+            }
+        }
+
+        // Hava durumu (OpenWeatherMap API)
+        async function getHavaDurumu(sorgu) {
+            try {
+                const sehir = sorgu.split("hava durumu")[1]?.trim() || "Istanbul";
+                const apiKey = "bd5e378503939ddaee76f12ad7a97608"; // Ücretsiz OpenWeatherMap API anahtarı
+                const url = `https://api.openweathermap.org/data/2.5/weather?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.cod === 200) {
+                    return `${sehir} için hava durumu: ${data.weather[0].description}, sıcaklık ${data.main.temp}°C, nem %${data.main.humidity}.`;
+                }
+                return `${sehir} için hava durumu bilgisi bulunamadı.`;
+            } catch (error) {
+                return "Hava durumu bilgisi alınamadı.";
+            }
+        }
+
+        // Rastgele espri (JokeAPI)
+        async function getEspri() {
+            try {
+                const url = "https://v2.jokeapi.dev/joke/Any?lang=tr";
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.type === "single") return data.joke;
+                return `${data.setup} ${data.delivery}`;
+            } catch (error) {
+                return "Espri bulamadım, ama seni güldürmek için başka bir şey deneyebilirim!";
+            }
+        }
+
+        // Basit çeviri fonksiyonu
         async function basitCeviri(text) {
-            // Gerçek bir çeviri API'si kullanmak ideal, ama tarayıcıda basit bir çözüm:
             try {
                 const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|tr`);
                 const data = await response.json();
-                return data.responseData.translatedText || text; // Çeviri başarısızsa orijinal metni döndür
+                return data.responseData.translatedText || text;
             } catch (error) {
-                console.error("Çeviri hatası:", error);
-                return text; // Hata olursa orijinal metni döndür
+                return text;
             }
         }
 
