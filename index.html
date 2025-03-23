@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumik AI - Beta 0.1 </title>
+    <title>Mumik AI - WhatsApp Tarzı</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -122,7 +122,7 @@
     <div id="app-container">
         <div id="header">
             <img src="https://i.imgur.com/8vJ8L5S.png" alt="Mumik AI Avatar">
-            <span>Mumik AI Beta 0.1 </span>
+            <span>Mumik AI</span>
         </div>
         <div id="chat-container"></div>
         <div id="input-container">
@@ -158,8 +158,7 @@
                 const ilkSonuc = data.items && data.items[0];
 
                 if (ilkSonuc) {
-                    // İlk sonuçtaki sayfayı çek ve özetle
-                    const ozet = await sayfaOzetle(ilkSonuc.link);
+                    const ozet = await sayfaOzetle(ilkSonuc.link, sorgu);
                     const botMsg = document.createElement("div");
                     botMsg.className = "message bot-message";
                     botMsg.innerHTML = `${ozet}<br><a href="${ilkSonuc.link}" target="_blank">Kaynak: ${ilkSonuc.title}</a><div class="timestamp">${getTime()}</div>`;
@@ -182,10 +181,10 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // Sayfayı özetleme fonksiyonu
-        async function sayfaOzetle(url) {
+        // Sayfayı özetleme fonksiyonu (geliştirilmiş)
+        async function sayfaOzetle(url, sorgu) {
             try {
-                // CORS proxy kullanarak sayfayı çek
+                // CORS proxy ile sayfayı çek
                 const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                 const response = await fetch(proxyUrl);
                 const html = await response.text();
@@ -193,13 +192,30 @@
                 // HTML'den metni çıkar
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, "text/html");
-                const paragraphs = doc.querySelectorAll("p");
+                const paragraphs = doc.querySelectorAll("p, h1, h2, h3, article");
                 let fullText = "";
                 paragraphs.forEach(p => fullText += p.textContent + " ");
 
-                // İlk 100 kelimeyi al ve özetle
-                const words = fullText.split(/\s+/).slice(0, 50).join(" ");
-                return words.length > 20 ? `${words}...` : "Özet oluşturulamadı, içerik çok kısa.";
+                // Sorguya göre alakalı içeriği bul ve özetle
+                const sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 10);
+                const sorguKelimeleri = sorgu.toLowerCase().split(" ");
+                let enAlakaliCumleler = [];
+
+                sentences.forEach(cumle => {
+                    let alakaPuani = 0;
+                    const cumleKelimeleri = cumle.toLowerCase().split(" ");
+                    sorguKelimeleri.forEach(kelime => {
+                        if (cumleKelimeleri.includes(kelime)) alakaPuani += 1;
+                    });
+                    if (alakaPuani > 0) {
+                        enAlakaliCumleler.push({ cumle, puan: alakaPuani });
+                    }
+                });
+
+                // En alakalı 2-3 cümleyi seç
+                enAlakaliCumleler.sort((a, b) => b.puan - a.puan);
+                const ozet = enAlakaliCumleler.slice(0, 3).map(c => c.cumle.trim()).join(". ") || "Özet oluşturulamadı.";
+                return ozet.length > 20 ? `${ozet}.` : "İçerik yetersiz, özetlenemedi.";
             } catch (error) {
                 console.error("Sayfa özetleme hatası:", error);
                 return "Sayfa içeriği özetlenemedi.";
