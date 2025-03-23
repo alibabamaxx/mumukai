@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumik AI - WhatsApp Tarzı</title>
+    <title>Mumik AI - 0.5</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -99,6 +99,25 @@
             align-self: flex-start;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        .typing {
+            background-color: #ffffff;
+            align-self: flex-start;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            animation: fadeInOut 1s infinite;
+        }
+        .typing span {
+            width: 8px;
+            height: 8px;
+            background-color: #888;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 0.6s infinite alternate;
+        }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
         .timestamp {
             font-size: 12px;
             color: #888;
@@ -115,6 +134,14 @@
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
         }
     </style>
 </head>
@@ -147,6 +174,13 @@
             // Giriş alanını temizle
             document.getElementById("query").value = "";
 
+            // "Yazıyor..." göstergesini ekle
+            const typingMsg = document.createElement("div");
+            typingMsg.className = "typing";
+            typingMsg.innerHTML = "<span></span><span></span><span></span>";
+            chatContainer.appendChild(typingMsg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
             // Google Custom Search API bilgileri
             const apiKey = "AIzaSyCJxdDwFNe-5ji7vT6xEYiCkr7La2waKR4";
             const cx = "0094620703c1e438d";
@@ -156,6 +190,9 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 const ilkSonuc = data.items && data.items[0];
+
+                // "Yazıyor..." göstergesini kaldır
+                chatContainer.removeChild(typingMsg);
 
                 if (ilkSonuc) {
                     const ozet = await sayfaOzetle(ilkSonuc.link, sorgu);
@@ -170,6 +207,7 @@
                     chatContainer.appendChild(botMsg);
                 }
             } catch (error) {
+                chatContainer.removeChild(typingMsg);
                 const botMsg = document.createElement("div");
                 botMsg.className = "message bot-message";
                 botMsg.innerHTML = `Bir hata oluştu.<div class="timestamp">${getTime()}</div>`;
@@ -184,20 +222,18 @@
         // Sayfayı özetleme fonksiyonu (geliştirilmiş)
         async function sayfaOzetle(url, sorgu) {
             try {
-                // CORS proxy ile sayfayı çek
                 const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                 const response = await fetch(proxyUrl);
                 const html = await response.text();
 
-                // HTML'den metni çıkar
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, "text/html");
-                const paragraphs = doc.querySelectorAll("p, h1, h2, h3, article");
+                const elements = doc.querySelectorAll("p, h1, h2, h3, article, span");
                 let fullText = "";
-                paragraphs.forEach(p => fullText += p.textContent + " ");
+                elements.forEach(el => fullText += el.textContent + " ");
 
-                // Sorguya göre alakalı içeriği bul ve özetle
-                const sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 10);
+                // Sorguya göre alakalı içeriği bul
+                const sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 15);
                 const sorguKelimeleri = sorgu.toLowerCase().split(" ");
                 let enAlakaliCumleler = [];
 
@@ -205,20 +241,41 @@
                     let alakaPuani = 0;
                     const cumleKelimeleri = cumle.toLowerCase().split(" ");
                     sorguKelimeleri.forEach(kelime => {
-                        if (cumleKelimeleri.includes(kelime)) alakaPuani += 1;
+                        if (cumleKelimeleri.includes(kelime)) alakaPuani += 2;
+                        else if (cumle.toLowerCase().includes(kelime)) alakaPuani += 1;
                     });
-                    if (alakaPuani > 0) {
-                        enAlakaliCumleler.push({ cumle, puan: alakaPuani });
+                    if (alakaPuani > 1) {
+                        enAlakaliCumleler.push({ cumle: cumle.trim(), puan: alakaPuani });
                     }
                 });
 
-                // En alakalı 2-3 cümleyi seç
+                // En alakalı 2-3 cümleyi seç ve Türkçe'ye çevir (gerekirse)
                 enAlakaliCumleler.sort((a, b) => b.puan - a.puan);
-                const ozet = enAlakaliCumleler.slice(0, 3).map(c => c.cumle.trim()).join(". ") || "Özet oluşturulamadı.";
+                let ozet = enAlakaliCumleler.slice(0, 3).map(c => c.cumle).join(". ");
+                if (!ozet) return "Alakalı içerik bulunamadı.";
+
+                // İngilizce kontrolü ve basit çeviri
+                if (/^[A-Za-z]/.test(ozet) && !sorgu.match(/[A-Za-z]/)) {
+                    ozet = await basitCeviri(ozet);
+                }
+
                 return ozet.length > 20 ? `${ozet}.` : "İçerik yetersiz, özetlenemedi.";
             } catch (error) {
                 console.error("Sayfa özetleme hatası:", error);
                 return "Sayfa içeriği özetlenemedi.";
+            }
+        }
+
+        // Basit çeviri fonksiyonu (İngilizceyi Türkçe'ye)
+        async function basitCeviri(text) {
+            // Gerçek bir çeviri API'si kullanmak ideal, ama tarayıcıda basit bir çözüm:
+            try {
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|tr`);
+                const data = await response.json();
+                return data.responseData.translatedText || text; // Çeviri başarısızsa orijinal metni döndür
+            } catch (error) {
+                console.error("Çeviri hatası:", error);
+                return text; // Hata olursa orijinal metni döndür
             }
         }
 
