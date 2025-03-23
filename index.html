@@ -3,95 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumik AI</title>
+    <title>Mumik AI - WhatsApp Tarzı</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #e5ddd5;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
-            background-color: #f0f0f0;
+            height: 100vh;
         }
-        #search-container {
-            margin-bottom: 20px;
+        #app-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #header {
+            background-color: #075E54;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        #header span {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: url('https://i.imgur.com/8vJ8L5S.png');
+            background-size: cover;
+        }
+        #input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ccc;
         }
         #query {
-            padding: 10px;
-            width: 300px;
+            flex-grow: 1;
+            padding: 12px;
             font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            outline: none;
         }
-        #search-btn {
-            padding: 10px 20px;
+        #send-btn {
+            padding: 12px 20px;
             font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
+            background-color: #25D366;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        #result {
-            max-width: 600px;
-            padding: 10px;
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            display: none;
+        #send-btn:hover {
+            background-color: #20b958;
+        }
+        .message {
+            max-width: 70%;
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 10px;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #ffffff;
+            align-self: flex-start;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .timestamp {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+            margin-top: 5px;
+        }
+        a {
+            color: #1e90ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <h1>Mumik AI</h1>
-    <div id="search-container">
-        <input type="text" id="query" placeholder="Ne aramak istersiniz?">
-        <button id="search-btn" onclick="ara()">Ara</button>
-    </div>
-    <div id="result">
-        <h3 id="result-title"></h3>
-        <a id="result-link" href="#" target="_blank"></a>
+    <div id="app-container">
+        <div id="header">
+            <img src="https://i.imgur.com/8vJ8L5S.png" alt="Mumik AI Avatar">
+            <span>Mumik AI</span>
+        </div>
+        <div id="chat-container"></div>
+        <div id="input-container">
+            <input type="text" id="query" placeholder="Bir şey yaz...">
+            <button id="send-btn" onclick="gonder()">Gönder</button>
+        </div>
     </div>
 
     <script>
-        async function ara() {
-            const sorgu = document.getElementById("query").value;
-            if (!sorgu) {
-                alert("Lütfen bir şey yazın!");
-                return;
-            }
+        const chatContainer = document.getElementById("chat-container");
+
+        async function gonder() {
+            const sorgu = document.getElementById("query").value.trim();
+            if (!sorgu) return;
+
+            // Kullanıcı mesajını ekle
+            const userMsg = document.createElement("div");
+            userMsg.className = "message user-message";
+            userMsg.innerHTML = `${sorgu}<div class="timestamp">${getTime()}</div>`;
+            chatContainer.appendChild(userMsg);
+
+            // Giriş alanını temizle
+            document.getElementById("query").value = "";
 
             // Google Custom Search API bilgileri
-            const apiKey = "AIzaSyCJxdDwFNe-5ji7vT6xEYiCkr7La2waKR4"; // Sizin API anahtarınız
-            const cx = "0094620703c1e438d"; // Sizin CSE ID’niz
+            const apiKey = "AIzaSyCJxdDwFNe-5ji7vT6xEYiCkr7La2waKR4";
+            const cx = "0094620703c1e438d";
             const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(sorgu)}`;
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-
-                // İlk sonucu al
                 const ilkSonuc = data.items && data.items[0];
+
                 if (ilkSonuc) {
-                    document.getElementById("result-title").textContent = ilkSonuc.title;
-                    document.getElementById("result-link").textContent = ilkSonuc.link;
-                    document.getElementById("result-link").href = ilkSonuc.link;
-                    document.getElementById("result").style.display = "block";
+                    // İlk sonuçtaki sayfayı çek ve özetle
+                    const ozet = await sayfaOzetle(ilkSonuc.link);
+                    const botMsg = document.createElement("div");
+                    botMsg.className = "message bot-message";
+                    botMsg.innerHTML = `${ozet}<br><a href="${ilkSonuc.link}" target="_blank">Kaynak: ${ilkSonuc.title}</a><div class="timestamp">${getTime()}</div>`;
+                    chatContainer.appendChild(botMsg);
                 } else {
-                    document.getElementById("result-title").textContent = "Sonuç bulunamadı.";
-                    document.getElementById("result-link").textContent = "";
-                    document.getElementById("result").style.display = "block";
+                    const botMsg = document.createElement("div");
+                    botMsg.className = "message bot-message";
+                    botMsg.innerHTML = `Sonuç bulunamadı.<div class="timestamp">${getTime()}</div>`;
+                    chatContainer.appendChild(botMsg);
                 }
             } catch (error) {
+                const botMsg = document.createElement("div");
+                botMsg.className = "message bot-message";
+                botMsg.innerHTML = `Bir hata oluştu.<div class="timestamp">${getTime()}</div>`;
+                chatContainer.appendChild(botMsg);
                 console.error("Hata:", error);
-                document.getElementById("result-title").textContent = "Bir hata oluştu.";
-                document.getElementById("result-link").textContent = "";
-                document.getElementById("result").style.display = "block";
+            }
+
+            // Sohbeti aşağı kaydır
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Sayfayı özetleme fonksiyonu
+        async function sayfaOzetle(url) {
+            try {
+                // CORS proxy kullanarak sayfayı çek
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                const response = await fetch(proxyUrl);
+                const html = await response.text();
+
+                // HTML'den metni çıkar
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+                const paragraphs = doc.querySelectorAll("p");
+                let fullText = "";
+                paragraphs.forEach(p => fullText += p.textContent + " ");
+
+                // İlk 100 kelimeyi al ve özetle
+                const words = fullText.split(/\s+/).slice(0, 50).join(" ");
+                return words.length > 20 ? `${words}...` : "Özet oluşturulamadı, içerik çok kısa.";
+            } catch (error) {
+                console.error("Sayfa özetleme hatası:", error);
+                return "Sayfa içeriği özetlenemedi.";
             }
         }
 
-        // Enter tuşu ile arama
+        // Zaman damgası fonksiyonu
+        function getTime() {
+            const now = new Date();
+            return now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+        }
+
+        // Enter tuşu ile gönderme
         document.getElementById("query").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
-                ara();
+                gonder();
             }
         });
     </script>
