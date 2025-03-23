@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mumik AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        #search-container {
+            margin-bottom: 20px;
+        }
+        #query {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+        }
+        #search-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #result {
+            max-width: 600px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mumik AI</h1>
+    <div id="search-container">
+        <input type="text" id="query" placeholder="Ne aramak istersiniz?">
+        <button id="search-btn" onclick="ara()">Ara</button>
+    </div>
+    <div id="result">
+        <h3 id="result-title"></h3>
+        <a id="result-link" href="#" target="_blank"></a>
+    </div>
+
+    <script>
+        async function ara() {
+            const sorgu = document.getElementById("query").value;
+            if (!sorgu) {
+                alert("Lütfen bir şey yazın!");
+                return;
+            }
+
+            // Google Custom Search API bilgileri
+            const apiKey = "AIzaSyCJxdDwFNe-5ji7vT6xEYiCkr7La2waKR4"; // Sizin API anahtarınız
+            const cx = "0094620703c1e438d"; // Sizin CSE ID’niz
+            const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(sorgu)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // İlk sonucu al
+                const ilkSonuc = data.items && data.items[0];
+                if (ilkSonuc) {
+                    document.getElementById("result-title").textContent = ilkSonuc.title;
+                    document.getElementById("result-link").textContent = ilkSonuc.link;
+                    document.getElementById("result-link").href = ilkSonuc.link;
+                    document.getElementById("result").style.display = "block";
+                } else {
+                    document.getElementById("result-title").textContent = "Sonuç bulunamadı.";
+                    document.getElementById("result-link").textContent = "";
+                    document.getElementById("result").style.display = "block";
+                }
+            } catch (error) {
+                console.error("Hata:", error);
+                document.getElementById("result-title").textContent = "Bir hata oluştu.";
+                document.getElementById("result-link").textContent = "";
+                document.getElementById("result").style.display = "block";
+            }
+        }
+
+        // Enter tuşu ile arama
+        document.getElementById("query").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                ara();
+            }
+        });
+    </script>
+</body>
+</html>
